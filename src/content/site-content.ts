@@ -551,10 +551,10 @@ export const defaultSiteContent: BaladzSiteContent = {
 
   popup: {
     aktif: true,
-    modeTampilan: "gambar_teks",
+    modeTampilan: "gambar_saja",
     judul: "Jadwal PSB 2026/2027",
     subjudul: "Gelombang 1 berlangsung September 2026–Januari 2027 dan Gelombang 2 Januari–Mei 2027. Jadwal berlaku untuk semua jenjang.",
-    gambarPoster: "/images/baladz/gallery-class.jpg",
+    gambarPoster: "https://2lf0avj4gf.ufs.sh/f/SIdAcAFD4rpZ2DLkwtswMm3W1zJSblX8H5BAqCIQkuYLEnDR",
     teksCta: "Tanyakan PSB via WhatsApp",
     nomorWaCta: "081234598187",
     pesanWaCta: "Assalamu'alaikum Panitia PSB Baladz, saya ingin menanyakan pendaftaran santri baru.",

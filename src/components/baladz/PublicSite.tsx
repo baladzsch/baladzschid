@@ -43,7 +43,7 @@ function formatRupiahRange(minimum: number, maximum?: number): string {
 }
 
 export function PublicSite() {
-  const { content } = useSiteContent();
+  const { content, isLoaded } = useSiteContent();
 
   const [activeTab, setActiveTab] = useState<"beranda" | "kabar">("beranda");
 
@@ -51,23 +51,41 @@ export function PublicSite() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const popupScheduledRef = useRef(false);
 
+  const closePopup = () => {
+    setIsPopupOpen(false);
+    try {
+      window.sessionStorage.setItem("baladz-popup-shown", "true");
+    } catch {
+      // Ignore sessionStorage issues
+    }
+  };
+
   useEffect(() => {
+    // Tunggu sampai data konten selesai di-load agar tidak menampilkan popup dummy lama
+    if (!isLoaded) return;
     if (!content.popup?.aktif || popupScheduledRef.current) return;
 
     const sessionKey = "baladz-popup-shown";
-    if (window.sessionStorage.getItem(sessionKey)) return;
+    try {
+      if (window.sessionStorage.getItem(sessionKey)) return;
+    } catch {
+      // Ignore
+    }
 
     popupScheduledRef.current = true;
     const timer = window.setTimeout(() => {
-      window.sessionStorage.setItem(sessionKey, "true");
+      try {
+        window.sessionStorage.setItem(sessionKey, "true");
+      } catch {
+        // Ignore
+      }
       setIsPopupOpen(true);
-    }, 400);
+    }, 500);
 
     return () => {
       window.clearTimeout(timer);
-      popupScheduledRef.current = false;
     };
-  }, [content.popup?.aktif]);
+  }, [isLoaded, content.popup?.aktif]);
 
   // Mobile menu open/close
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1501,7 +1519,12 @@ export function PublicSite() {
 
       {/* 8. POPUP PENGUMUMAN */}
       {isPopupOpen && content.popup && content.popup.aktif && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closePopup();
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs"
+        >
           {(() => {
             const popupCtaUrl = resolvePopupCtaUrl(content.popup, content.kontak?.whatsappUtama);
             const isFullPoster =
@@ -1515,7 +1538,7 @@ export function PublicSite() {
               <div className="relative max-w-md sm:max-w-lg w-full flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
                 {/* Tombol Close X Floating */}
                 <button
-                  onClick={() => setIsPopupOpen(false)}
+                  onClick={closePopup}
                   className="absolute -top-3.5 -right-2 sm:-top-4 sm:-right-4 z-30 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-stone-900/90 hover:bg-black text-white flex items-center justify-center transition-all hover:scale-110 shadow-2xl border-2 border-white cursor-pointer"
                   aria-label="Tutup Pengumuman"
                 >
@@ -1528,7 +1551,7 @@ export function PublicSite() {
                     href={popupCtaUrl}
                     target="_blank"
                     rel="noreferrer"
-                    onClick={() => setIsPopupOpen(false)}
+                    onClick={closePopup}
                     className="block group relative w-full text-center cursor-pointer bg-stone-50"
                     title="Klik untuk membuka pengumuman / WhatsApp"
                   >
@@ -1548,7 +1571,7 @@ export function PublicSite() {
                         href={popupCtaUrl}
                         target="_blank"
                         rel="noreferrer"
-                        onClick={() => setIsPopupOpen(false)}
+                        onClick={closePopup}
                         className="w-full bg-[#0F4C3A] hover:bg-[#0c3f30] text-white py-3 px-4 rounded-xl font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-2 transition-transform hover:scale-[1.01]"
                       >
                         <MessageCircle className="w-4 h-4" />
@@ -1556,7 +1579,7 @@ export function PublicSite() {
                       </a>
                       {content.popup.teksTutup && (
                         <button
-                          onClick={() => setIsPopupOpen(false)}
+                          onClick={closePopup}
                           className="text-xs font-medium text-stone-400 hover:text-stone-700 transition-colors cursor-pointer py-0.5"
                         >
                           {content.popup.teksTutup}
@@ -1569,7 +1592,7 @@ export function PublicSite() {
                 {/* Tombol Tutup Di Bawah Modal jika tidak ada tombol CTA */}
                 {!content.popup.teksCta && (
                   <button
-                    onClick={() => setIsPopupOpen(false)}
+                    onClick={closePopup}
                     className="mt-3 text-xs sm:text-sm font-semibold text-white/90 hover:text-white transition-colors cursor-pointer py-1.5 px-4 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-xs"
                   >
                     {content.popup.teksTutup || "Tutup Pengumuman ✕"}
@@ -1583,7 +1606,7 @@ export function PublicSite() {
               <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-stone-200 relative animate-in fade-in zoom-in-95 duration-200">
                 {/* Tombol Close X */}
                 <button
-                  onClick={() => setIsPopupOpen(false)}
+                  onClick={closePopup}
                   className="absolute top-3.5 right-3.5 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center transition-colors cursor-pointer"
                   aria-label="Tutup Pengumuman"
                 >
@@ -1621,7 +1644,7 @@ export function PublicSite() {
                         href={popupCtaUrl}
                         target="_blank"
                         rel="noreferrer"
-                        onClick={() => setIsPopupOpen(false)}
+                        onClick={closePopup}
                         className="w-full bg-[#0F4C3A] hover:bg-[#0c3f30] text-white py-3 px-4 rounded-xl font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-2 transition-transform hover:scale-[1.01]"
                       >
                         <MessageCircle className="w-4 h-4" />
@@ -1629,7 +1652,7 @@ export function PublicSite() {
                       </a>
                     )}
                     <button
-                      onClick={() => setIsPopupOpen(false)}
+                      onClick={closePopup}
                       className="w-full py-2 text-xs font-semibold text-stone-500 hover:text-stone-800 transition-colors cursor-pointer"
                     >
                       {content.popup.teksTutup || "Lanjutkan ke Website"}

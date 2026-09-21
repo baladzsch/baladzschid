@@ -24,6 +24,7 @@ interface SiteContentContextValue {
   savedAt: string | null;
   isSaving: boolean;
   isDbConnected: boolean;
+  isLoaded: boolean;
 }
 
 const SiteContentContext = createContext<SiteContentContextValue | null>(null);
@@ -75,6 +76,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDbConnected, setIsDbConnected] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Load content on mount: coba dari Neon API, lalu fallback ke localStorage
   useEffect(() => {
@@ -90,6 +92,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
             const merged = mergeSiteContent(parsed);
             setContent(merged);
             setDraft(merged);
+            setIsLoaded(true);
           }
         }
       } catch {
@@ -108,12 +111,17 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
               setContent(merged);
               setDraft(merged);
               window.localStorage.setItem(storageKey, JSON.stringify(merged));
+              setIsLoaded(true);
               return;
             }
           }
         }
       } catch (err) {
         console.warn("Gagal terhubung ke database Neon, menggunakan cache lokal:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoaded(true);
+        }
       }
     }
 
@@ -182,8 +190,9 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
       savedAt,
       isSaving,
       isDbConnected,
+      isLoaded,
     }),
-    [content, draft, savedAt, isSaving, isDbConnected],
+    [content, draft, savedAt, isSaving, isDbConnected, isLoaded],
   );
 
   return (
